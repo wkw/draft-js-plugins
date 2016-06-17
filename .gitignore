@@ -1,5 +1,6 @@
 .DS_Store
 .idea
+*.sublime-*
 
 # Dependency directory
 # Commenting this out is preferred by some people, see
