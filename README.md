@@ -1,5 +1,11 @@
 # DraftJS Plugins
 
+## Notes for this Fork [EMN]
+
+- at present, the interesting work is on branch [wysiwyg](https://bitbucket.org/EMN/draft-js-plugins/branch/emn-wysiwyg) (which is child of `wysiwyg` branch). This contains the foundation plugins for decorating blocks with such things as resizing, showing toolbar, drag-n-drop.
+
+---------------------------------------------------------------------------------------------
+
 ![Draft JS Plugins Logo](https://dl.dropboxusercontent.com/u/40735/draft-js-plugins.svg)
 
 High quality plugins with great UX on top of [DraftJS](https://github.com/facebook/draft-js).
