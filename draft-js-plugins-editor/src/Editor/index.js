@@ -34,10 +34,10 @@ class PluginEditor extends Component {
   constructor(props) {
     super(props);
 
-    this.plugins = [this.props, ...this.resolvePlugins()];
-    for (const plugin of this.plugins) {
+    const plugins = [this.props, ...this.resolvePlugins()];
+    for (const plugin of plugins) {
       if (typeof plugin.initialize !== 'function') continue;
-      plugin.initialize(this);
+      plugin.initialize(this.getPluginMethods());
     }
 
     // attach proxy methods like `focus` or `blur`
@@ -47,7 +47,7 @@ class PluginEditor extends Component {
       );
     }
 
-    this.state = {};
+    this.state = {}; // TODO for Nik: ask ben why this is relevent
   }
 
   componentWillMount() {
@@ -73,33 +73,40 @@ class PluginEditor extends Component {
   // Cycle through the plugins, changing the editor state with what the plugins
   // changed (or didn't)
   onChange = (editorState) => {
-    if (this.state.readOnly) return;
-
     let newEditorState = editorState;
-
     this.resolvePlugins().forEach((plugin) => {
       if (plugin.onChange) {
-        newEditorState = plugin.onChange(newEditorState, this);
+        newEditorState = plugin.onChange(newEditorState, this.getPluginMethods());
       }
     });
 
     if (this.props.onChange) {
-      this.props.onChange(newEditorState, this);
+      this.props.onChange(newEditorState, this.getPluginMethods());
     }
   };
 
-  setEditorState = this.onChange;
-  getEditorState = () => this.props.editorState;
+  getPlugins = () => this.props.plugins.slice(0);
+  getProps = () => ({ ...this.props });
 
+  // TODO further down in render we use readOnly={this.props.readOnly || this.state.readOnly}. Ask Ben why readOnly is here just from the props? Why would plugins use this instead of just taking it from getProps?
   getReadOnly = () => this.props.readOnly;
-
   setReadOnly = (readOnly) => {
     if (readOnly !== this.state.readOnly) this.setState({ readOnly });
   };
 
+  getEditorState = () => this.props.editorState;
+  getPluginMethods = () => ({
+    getPlugins: this.getPlugins,
+    getProps: this.getProps,
+    setEditorState: this.onChange,
+    getEditorState: this.getEditorState,
+    getReadOnly: this.getReadOnly,
+    setReadOnly: this.setReadOnly,
+  });
+
   createEventHooks = (methodName, plugins) => (...args) => {
     const newArgs = [].slice.apply(args);
-    newArgs.push({ ...this });
+    newArgs.push(this.getPluginMethods());
     for (const plugin of plugins) {
       if (typeof plugin[methodName] !== 'function') continue;
       const result = plugin[methodName](...newArgs);
@@ -112,7 +119,7 @@ class PluginEditor extends Component {
   createFnHooks = (methodName, plugins) => (...args) => {
     const newArgs = [].slice.apply(args);
 
-    newArgs.push({ ...this });
+    newArgs.push(this.getPluginMethods());
 
     if (methodName === 'blockRendererFn') {
       let block = { props: {} };
@@ -252,7 +259,6 @@ class PluginEditor extends Component {
     const pluginHooks = this.createPluginHooks();
     const customStyleMap = this.resolveCustomStyleMap();
     const accessibilityProps = this.resolveAccessibilityProps();
-
     return (
       <Editor
         { ...this.props }

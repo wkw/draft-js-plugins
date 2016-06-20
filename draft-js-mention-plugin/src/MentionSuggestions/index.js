@@ -51,6 +51,7 @@ export default class MentionSuggestions extends Component {
         prevState,
         props: this.props,
         state: this.state,
+        popover: this.refs.popover,
       });
       Object.keys(newStyles).forEach((key) => {
         this.refs.popover.style[key] = newStyles[key];
